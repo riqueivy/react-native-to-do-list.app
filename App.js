@@ -1,17 +1,27 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, Switch, TouchableOpacity } from 'react-native';
+import { useState, useEffect} from 'react';
+import { StyleSheet, Text, View, TextInput, FlatList, Switch, TouchableOpacity, } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
-  const [Lista, setLista] = useState([{ texto: 'dormir', feito: false }]);
+  const [Lista, setLista] = useState([{ texto: 'dormir', feito: false , data:''}]);
   const [Input, setInput] = useState('');
+
+
 
   function armazenar() {
     //.trim   => remove espaços em branco na string
     if (Input.trim() === '') {
       alert('Digite algo');
     } else {
-      const novaLista = [...Lista, { texto: Input}];
+      const agora = new Date();
+      const dia = String(agora.getDate()).padStart(2, '0');
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const ano = agora.getFullYear();
+      const hora = String(agora.getHours()).padStart(2, '0');
+      const minutos = String(agora.getMinutes()).padStart(2, '0');
+
+      const dataFormatada = `${dia}/${mes}/${ano} - ${hora}:${minutos}`;
+      const novaLista = [...Lista, { texto: Input,feito:false, data: dataFormatada}];
       setLista(novaLista);
       setInput('');
       AsyncStorage.setItem('tarefas', JSON.stringify(novaLista));
@@ -21,7 +31,7 @@ export default function App() {
   useEffect(() => {
   async function carregarLista() {
     const dados = await AsyncStorage.getItem('tarefas');
-    if (dados) {
+    if (dados !== null) {
       //parce = reverter 
       setLista(JSON.parse(dados));
     }
@@ -68,6 +78,7 @@ export default function App() {
             <Switch value={item.feito} onValueChange={() => Butao(index)} />
 
             <Text style={item.feito ? styles.feito : styles.texto}>{item.texto}</Text>
+            <Text style={styles.hora}>{item.data}</Text>
 
             <TouchableOpacity onPress={() => Deletar(index)}>
               <Text style={styles.deletar}>Deletar</Text>
@@ -136,13 +147,13 @@ const styles = StyleSheet.create({
   },
 
   texto: {
-    fontSize: 16,
+    fontSize: 18,
     flex: 1,
     marginHorizontal: 10,
   },
 
   feito: {
-    fontSize: 16,
+    fontSize: 18,
     flex: 1,
     marginHorizontal: 10,
     color: 'gray',
@@ -153,4 +164,11 @@ const styles = StyleSheet.create({
     color: 'red',
     fontWeight: 'bold',
   },
+
+  hora: {
+    marginTop:2,
+    marginRight:20,
+    fontSize:12,
+    color:'gray'
+  }
 });
