@@ -1,29 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, Switch, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
   const [Lista, setLista] = useState([{ texto: 'dormir', feito: false }]);
   const [Input, setInput] = useState('');
 
   function armazenar() {
+    //.trim   => remove espaços em branco na string
     if (Input.trim() === '') {
       alert('Digite algo');
     } else {
-      const novaTarefa = { texto: Input, feito: false };
-      setLista([...Lista, novaTarefa]);
+      const novaLista = [...Lista, { texto: Input}];
+      setLista(novaLista);
       setInput('');
+      AsyncStorage.setItem('tarefas', JSON.stringify(novaLista));
+    }
+    
+  }
+  useEffect(() => {
+  async function carregarLista() {
+    const dados = await AsyncStorage.getItem('tarefas');
+    if (dados) {
+      //parce = reverter 
+      setLista(JSON.parse(dados));
     }
   }
+  carregarLista();
+}, []);
+
 //indexParameter == index atual do item selecionado
   function Deletar(indexParameter) {
     const ListaFiltrada = Lista.filter((_, index) => index !== indexParameter);
     setLista(ListaFiltrada);
+    //stringify = transformar
+    AsyncStorage.setItem('tarefas', JSON.stringify(ListaFiltrada));
   }
 //index == refere-se ao index do item que deve ser selecionado
   function Butao(index) {
     const novaLista = [...Lista];
     novaLista[index].feito = !novaLista[index].feito;
     setLista(novaLista);
+    AsyncStorage.setItem('tarefas', JSON.stringify(novaLista));
   }
 
   return (
